@@ -1,5 +1,5 @@
 <?php
-namespace Druidvav\ApiServiceBundle;
+namespace Druidvav\ApiServiceBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
