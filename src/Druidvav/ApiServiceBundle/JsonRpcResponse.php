@@ -10,10 +10,13 @@ class JsonRpcResponse
     protected $request;
     protected $error = null;
     protected $result = false;
+    protected $httpResponse;
 
-    public function setRequest(JsonRpcRequest $request)
+    public function __construct(JsonRpcRequest $request)
     {
         $this->request = $request;
+        $this->stopwatch = new Stopwatch();
+        $this->stopwatch->start('api');
     }
 
     /**
@@ -22,11 +25,6 @@ class JsonRpcResponse
     public function getRequest()
     {
         return $this->request;
-    }
-
-    public function setStopwatch(Stopwatch $stopwatch)
-    {
-        $this->stopwatch = $stopwatch;
     }
 
     /**
@@ -69,12 +67,23 @@ class JsonRpcResponse
         return $result;
     }
 
-    public function getHttpResponse()
+    public function generateHttpResponse()
     {
-        $result = $this->getResponseArray();
-        $response = new JsonResponse($result);
+        $this->stopwatch->stop('api');
+        $response = new JsonResponse($this->getResponseArray());
         $response->setEncodingOptions($response->getEncodingOptions() | JSON_UNESCAPED_UNICODE);
         $response->headers->add([ 'X-Api-Time' => $this->getDuration() ]);
-        return $response;
+        $this->httpResponse = $response;
+    }
+
+    /**
+     * @return JsonResponse
+     */
+    public function getHttpResponse()
+    {
+        if (empty($this->httpResponse)) {
+            $this->generateHttpResponse();
+        }
+        return $this->httpResponse;
     }
 }

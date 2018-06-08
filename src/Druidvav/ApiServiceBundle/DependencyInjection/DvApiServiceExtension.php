@@ -33,7 +33,15 @@ class DvApiServiceExtension extends Extension
         $optionDef = new Definition('Druidvav\ApiServiceBundle\ApiServiceContainer');
         $optionDef->addArgument(new Reference('service_container'));
         $optionDef->addArgument(new Reference(str_replace('@', '', $config['logger'])));
+        $optionDef->addArgument(new Reference('event_dispatcher'));
+        $optionDef->addMethodCall('setClassNames', [ $config['request_class'], $config['response_class'] ]);
         $optionDef->setPublic(true);
         $container->setDefinition('Druidvav\ApiServiceBundle\ApiServiceContainer', $optionDef);
+
+        $optionDef = new Definition('Druidvav\ApiServiceBundle\ApiController');
+        $optionDef->setPublic(true);
+        $optionDef->setAutoconfigured(true);
+        $optionDef->setAutowired(true);
+        $container->setDefinition('Druidvav\ApiServiceBundle\ApiController', $optionDef);
     }
 }

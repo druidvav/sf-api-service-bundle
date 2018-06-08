@@ -12,18 +12,16 @@ class JsonRpcRequest
     private $id;
     private $method;
     private $params;
-
-    public function __construct(Request $request)
-    {
-        $this->httpRequest = $request;
-    }
+    private $isAssociative;
 
     /**
+     * @param Request $request
      * @throws JsonRpcInvalidRequestException
      * @throws JsonRpcParseException
      */
-    public function parseRequest()
+    public function parseRequest(Request $request)
     {
+        $this->httpRequest = $request;
         if (!$this->httpRequest->isMethod('POST')) {
             throw new JsonRpcParseException('Invalid method, method should be POST');
         }
@@ -56,6 +54,7 @@ class JsonRpcRequest
         $this->id = $body['id'];
         $this->method = $body['method'];
         $this->params = $body['params'];
+        $this->isAssociative = array_keys($this->params) ? array_keys($this->params)[0] !== 0 : false;
     }
 
     /**
@@ -79,6 +78,11 @@ class JsonRpcRequest
     public function getParams()
     {
         return $this->params;
+    }
+
+    public function isAssociative()
+    {
+        return $this->isAssociative;
     }
 
     public function getParam($param, $def = null)
