@@ -72,6 +72,8 @@ class ApiServiceContainer extends ContainerService
                         $callingParams[$i] = $request;
                     } elseif ($param->getClass()->getName() == JsonRpcResponse::class || $param->getClass()->isSubclassOf(JsonRpcResponse::class)) {
                         $callingParams[$i] = $response;
+                    } elseif ($request->getObject($param->getClass()->getName())) {
+                        $callingParams[$i] = $request->getObject($param->getClass()->getName());
                     } else {
                         throw new JsonRpcInvalidMethodException('Method definition is incorrect');
                     }

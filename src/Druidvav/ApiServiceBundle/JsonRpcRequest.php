@@ -8,11 +8,12 @@ use Symfony\Component\HttpFoundation\Request;
 class JsonRpcRequest
 {
     private $httpRequest;
-    private $jsonRequestRaw;
     private $id;
     private $method;
     private $params;
     private $isAssociative;
+
+    private $objects = [ ];
 
     /**
      * @param Request $request
@@ -28,17 +29,7 @@ class JsonRpcRequest
         if ($this->httpRequest->getContentType() != 'json') {
             throw new JsonRpcParseException('Content-Type should by application/json');
         }
-        $this->jsonRequestRaw = $this->httpRequest->getContent();
-        $this->parseJsonRequest();
-    }
-
-    /**
-     * @throws JsonRpcInvalidRequestException
-     * @throws JsonRpcParseException
-     */
-    protected function parseJsonRequest()
-    {
-        $body = json_decode($this->jsonRequestRaw, true);
+        $body = json_decode($this->httpRequest->getContent(), true);
         if (empty($body)) {
             throw new JsonRpcParseException('Invalid request body, should be valid json');
         }
@@ -90,11 +81,13 @@ class JsonRpcRequest
         return isset($this->params[$param]) ? $this->params[$param] : $def;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getJsonRequestRaw()
+    public function addObject($object)
     {
-        return $this->jsonRequestRaw;
+        $this->objects[get_class($object)] = $object;
+    }
+
+    public function getObject($class)
+    {
+        return $this->objects[$class] ? $this->objects[$class] : null;
     }
 }
