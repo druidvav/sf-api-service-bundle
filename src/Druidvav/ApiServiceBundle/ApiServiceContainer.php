@@ -3,8 +3,8 @@ namespace Druidvav\ApiServiceBundle;
 
 use Druidvav\ApiServiceBundle\Event\ApiRequestEvent;
 use Druidvav\ApiServiceBundle\Event\ApiResponseEvent;
+use Druidvav\ApiServiceBundle\Exception\JsonRpcExceptionInterface;
 use Druidvav\EssentialsBundle\Service\ContainerService;
-use Druidvav\ApiServiceBundle\Exception\JsonRpcException;
 use Druidvav\ApiServiceBundle\Exception\JsonRpcInvalidMethodException;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -91,7 +91,7 @@ class ApiServiceContainer extends ContainerService
                 throw new JsonRpcInvalidMethodException('Too many parameters');
             }
             $response->setResult(call_user_func_array([ $service, $methodName ], $callingParams));
-        } catch (JsonRpcException $e) {
+        } catch (JsonRpcExceptionInterface $e) {
             $response->setError($e->getMessage(), $e->getCode());
         }
         $this->dispatcher->dispatch(ApiResponseEvent::NAME, new ApiResponseEvent($response));
