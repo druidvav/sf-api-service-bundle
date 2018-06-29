@@ -79,7 +79,7 @@ class ApiServiceContainer extends ContainerService
                     }
                 } else {
                     $key = $request->isAssociative() ? $param->getName() : $requestParamId;
-                    if (isset($requestParams[$key])) {
+                    if (array_key_exists($key, $requestParams)) {
                         $callingParams[$i] = $requestParams[$key];
                         $requestParamId++;
                     } elseif (!$param->isOptional()) {
