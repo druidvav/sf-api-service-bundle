@@ -53,6 +53,16 @@ class JsonRpcResponse
         $this->result = $result;
     }
 
+    public function getError()
+    {
+        return !empty($this->error) ? $this->error : null;
+    }
+
+    public function getResult()
+    {
+        return !empty($this->error) ? null : $this->result;
+    }
+
     protected function getResponseArray()
     {
         $result = [
