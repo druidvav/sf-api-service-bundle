@@ -8,6 +8,7 @@
   },
   "require": {
     "php": ">=7.0.0",
+    "ext-json": "*",
     "symfony/framework-bundle": "^3.3",
     "symfony/stopwatch": "^3.3",
     "druidvav/essentials-bundle": "^1.7"

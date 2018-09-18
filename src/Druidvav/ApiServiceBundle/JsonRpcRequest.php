@@ -26,7 +26,8 @@ class JsonRpcRequest
         if (!$this->httpRequest->isMethod('POST')) {
             throw new JsonRpcParseException('Invalid method, method should be POST');
         }
-        if ($this->httpRequest->getContentType() != 'json') {
+        if ($this->httpRequest->getContentType() != 'json' &&
+            $this->httpRequest->getContentType() != 'json-rpc') {
             throw new JsonRpcParseException('Content-Type should by application/json');
         }
         $body = json_decode($this->httpRequest->getContent(), true);
@@ -68,7 +69,7 @@ class JsonRpcRequest
 
     public function getParams()
     {
-        return $this->params;
+        return $this->params ? $this->params : [ ];
     }
 
     public function isAssociative()
@@ -88,6 +89,6 @@ class JsonRpcRequest
 
     public function getObject($class)
     {
-        return $this->objects[$class] ? $this->objects[$class] : null;
+        return isset($this->objects[$class]) ? $this->objects[$class] : null;
     }
 }
