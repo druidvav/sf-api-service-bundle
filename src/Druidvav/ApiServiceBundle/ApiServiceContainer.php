@@ -93,6 +93,8 @@ class ApiServiceContainer extends ContainerService
             $response->setResult(call_user_func_array([ $service, $methodName ], $callingParams));
         } catch (JsonRpcExceptionInterface $e) {
             $response->setError($e->getMessage(), $e->getCode());
+        } catch (\Exception $e) {
+            $response->setError($e->getMessage(), -32603);
         }
         $this->dispatcher->dispatch(ApiResponseEvent::NAME, new ApiResponseEvent($response));
         return $response->getHttpResponse();
