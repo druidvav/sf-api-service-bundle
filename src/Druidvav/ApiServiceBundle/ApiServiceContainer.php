@@ -44,10 +44,10 @@ class ApiServiceContainer extends ContainerService
 
     /**
      * @param Request $httpRequest
+     * @param LoggerInterface $logger
      * @return JsonResponse
-     * @throws \ReflectionException
      */
-    public function handleRequest(Request $httpRequest)
+    public function handleRequest(Request $httpRequest, LoggerInterface $logger)
     {
         /** @var JsonRpcRequest $request */
         $request = new $this->requestClass();
@@ -94,6 +94,7 @@ class ApiServiceContainer extends ContainerService
         } catch (JsonRpcExceptionInterface $e) {
             $response->setError($e->getMessage(), $e->getCode());
         } catch (\Exception $e) {
+            $logger->error($e->getMessage(), [ 'exception' => $e ]);
             $response->setError($e->getMessage(), -32603);
         }
         $this->dispatcher->dispatch(ApiResponseEvent::NAME, new ApiResponseEvent($response));
