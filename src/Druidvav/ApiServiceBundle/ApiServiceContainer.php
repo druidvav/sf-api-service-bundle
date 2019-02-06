@@ -6,8 +6,8 @@ use Druidvav\ApiServiceBundle\Event\ApiResponseEvent;
 use Druidvav\ApiServiceBundle\Exception\JsonRpcExceptionInterface;
 use Druidvav\EssentialsBundle\Service\ContainerService;
 use Druidvav\ApiServiceBundle\Exception\JsonRpcInvalidMethodException;
-use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,10 +30,12 @@ class ApiServiceContainer extends ContainerService
     public function registerMethod($className, $methodName)
     {
         $classNameShort = $this->fromCamelCase(str_replace('ApiService', '', substr($className, strrpos($className, '\\') + 1)));
-        $this->methods[$classNameShort . '.' . $methodName] = [
-            'service' => $className,
-            'method' => $methodName,
-        ];
+        $this->methods[$classNameShort . '.' . $methodName] = [ 'service' => $className, 'method' => $methodName ];
+    }
+
+    public function registerAlias($alias, $className, $methodName)
+    {
+        $this->methods[$alias] = [ 'service' => $className, 'method' => $methodName ];
     }
 
     public function setClassNames($requestClass, $responseClass)
