@@ -7,11 +7,11 @@
     "psr-4": { "": "src/" }
   },
   "require": {
-    "php": ">=7.0.0",
+    "php": ">=7.1.0",
     "ext-json": "*",
-    "symfony/framework-bundle": "^3.3",
-    "symfony/stopwatch": "^3.3",
-    "druidvav/essentials-bundle": "^1.7"
+    "symfony/framework-bundle": "^3.4",
+    "symfony/stopwatch": "^3.4",
+    "druidvav/essentials-bundle": "^2.0"
   },
   "require-dev": {
 
