@@ -71,12 +71,13 @@ class ApiServiceContainer extends ContainerService
                     $key = $request->isAssociative() ? $param['name'] : $requestParamId;
                     if (!array_key_exists($key, $requestParams) && !$param['optional']) {
                         throw new JsonRpcInvalidMethodException('Undefined parameter "' . $param['name'] . '"');
+                    } elseif (array_key_exists($key, $requestParams)) {
+                        if (!empty($param['type']) && is_array($requestParams[$key]) && $param['type'] != 'array') {
+                            throw new JsonRpcInvalidMethodException('Invalid parameter type for "' . $param['name'] . '", should be "' . $param['type'] . '"');
+                        }
+                        $callingParams[$i] = $requestParams[$key];
+                        $requestParamId++;
                     }
-                    if (!empty($param['type']) && is_array($requestParams[$key]) && $param['type'] != 'array') {
-                        throw new JsonRpcInvalidMethodException('Invalid parameter type for "' . $param['name'] . '", should be "' . $param['type'] . '"');
-                    }
-                    $callingParams[$i] = $requestParams[$key];
-                    $requestParamId++;
                 }
             }
             if ($requestParamId > 0 && isset($requestParams[$requestParamId])) {
