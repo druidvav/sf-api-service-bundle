@@ -43,7 +43,7 @@ class ApiServiceCompilerPass implements CompilerPassInterface
                         }
                     } else {
                         $methodParams[$i] = [
-                            'type' => $param->getType()->getName(),
+                            'type' => $param->getType() ? $param->getType()->getName() : null,
                             'name' => $param->getName(),
                             'optional' => $param->isOptional()
                         ];
