@@ -6,11 +6,13 @@ use Druidvav\ApiServiceBundle\Event\ApiResponseEvent;
 use Druidvav\ApiServiceBundle\Exception\JsonRpcExceptionInterface;
 use Druidvav\EssentialsBundle\Service\ContainerService;
 use Druidvav\ApiServiceBundle\Exception\JsonRpcInvalidMethodException;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use TypeError;
 
 class ApiServiceContainer extends ContainerService
 {
@@ -27,15 +29,9 @@ class ApiServiceContainer extends ContainerService
         parent::__construct($container);
     }
 
-    public function registerMethod($className, $methodName)
+    public function registerMethod($apiMethodName, $className, $methodName, $methodParams)
     {
-        $classNameShort = $this->fromCamelCase(str_replace('ApiService', '', substr($className, strrpos($className, '\\') + 1)));
-        $this->methods[$classNameShort . '.' . $methodName] = [ 'service' => $className, 'method' => $methodName ];
-    }
-
-    public function registerAlias($alias, $className, $methodName)
-    {
-        $this->methods[$alias] = [ 'service' => $className, 'method' => $methodName ];
+        $this->methods[$apiMethodName] = [ 'service' => $className, 'method' => $methodName, 'params' => $methodParams ];
     }
 
     public function setClassNames($requestClass, $responseClass)
@@ -44,12 +40,7 @@ class ApiServiceContainer extends ContainerService
         $this->responseClass = $responseClass;
     }
 
-    /**
-     * @param Request $httpRequest
-     * @param LoggerInterface $logger
-     * @return JsonResponse
-     */
-    public function handleRequest(Request $httpRequest, LoggerInterface $logger)
+    public function handleRequest(Request $httpRequest, LoggerInterface $logger): JsonResponse
     {
         /** @var JsonRpcRequest $request */
         $request = new $this->requestClass();
@@ -61,55 +52,48 @@ class ApiServiceContainer extends ContainerService
             if (!$request->getMethod() || empty($this->methods[$request->getMethod()])) {
                 throw new JsonRpcInvalidMethodException('Method not found');
             }
-            $service = $this->get($this->methods[$request->getMethod()]['service']);
-            $methodName = $this->methods[$request->getMethod()]['method'];
-
+            $methodDef = $this->methods[$request->getMethod()];
             $requestParams = $request->getParams();
             $requestParamId = 0;
             $callingParams = [ ];
-            $reader = new \ReflectionMethod($service, $methodName);
-            foreach ($reader->getParameters() as $i => $param) {
-                if ($param->getClass()) {
-                    if ($param->getClass()->getName() == JsonRpcRequest::class || $param->getClass()->isSubclassOf(JsonRpcRequest::class)) {
+            foreach ($methodDef['params'] as $i => $param) {
+                if (!empty($param['className'])) {
+                    if ($param['className'] == JsonRpcRequest::class) {
                         $callingParams[$i] = $request;
-                    } elseif ($param->getClass()->getName() == JsonRpcResponse::class || $param->getClass()->isSubclassOf(JsonRpcResponse::class)) {
+                    } elseif ($param['className'] == JsonRpcResponse::class) {
                         $callingParams[$i] = $response;
-                    } elseif ($request->getObject($param->getClass()->getName())) {
-                        $callingParams[$i] = $request->getObject($param->getClass()->getName());
+                    } elseif ($request->getObject($param['className'])) {
+                        $callingParams[$i] = $request->getObject($param['className']);
                     } else {
                         throw new JsonRpcInvalidMethodException('Method definition is incorrect');
                     }
                 } else {
-                    $key = $request->isAssociative() ? $param->getName() : $requestParamId;
-                    if (array_key_exists($key, $requestParams)) {
-                        $callingParams[$i] = $requestParams[$key];
-                        $requestParamId++;
-                    } elseif (!$param->isOptional()) {
-                        throw new JsonRpcInvalidMethodException('Undefined parameter "' . $key . '"');
+                    $key = $request->isAssociative() ? $param['name'] : $requestParamId;
+                    if (!array_key_exists($key, $requestParams)) {
+                        throw new JsonRpcInvalidMethodException('Undefined parameter "' . $param['name'] . '"');
                     }
+                    if (!empty($param['type']) && is_array($requestParams[$key]) && $param['type'] != 'array') {
+                        throw new JsonRpcInvalidMethodException('Invalid parameter type for "' . $param['name'] . '", should be "' . $param['type'] . '"');
+                    }
+                    $callingParams[$i] = $requestParams[$key];
+                    $requestParamId++;
                 }
             }
             if ($requestParamId > 0 && isset($requestParams[$requestParamId])) {
                 throw new JsonRpcInvalidMethodException('Too many parameters');
             }
-            $response->setResult(call_user_func_array([ $service, $methodName ], $callingParams));
+            try {
+                $response->setResult(call_user_func_array([ $this->get($methodDef['service']), $methodDef['method'] ], $callingParams));
+            } catch (TypeError $e) {
+                throw new JsonRpcInvalidMethodException('Invalid parameter type!');
+            }
         } catch (JsonRpcExceptionInterface $e) {
             $response->setError($e->getMessage(), $e->getCode());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $logger->error($e->getMessage(), [ 'exception' => $e ]);
             $response->setError($e->getMessage(), -32603);
         }
         $this->dispatcher->dispatch(ApiResponseEvent::NAME, new ApiResponseEvent($response));
         return $response->getHttpResponse();
-    }
-
-    protected function fromCamelCase($input)
-    {
-        preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
-        $ret = $matches[0];
-        foreach ($ret as &$match) {
-            $match = $match == strtoupper($match) ? strtolower($match) : lcfirst($match);
-        }
-        return implode('_', $ret);
     }
 }

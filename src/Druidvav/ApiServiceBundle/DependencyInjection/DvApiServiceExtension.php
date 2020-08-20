@@ -37,7 +37,7 @@ class DvApiServiceExtension extends Extension
         $optionDef->addMethodCall('setClassNames', [ $config['request_class'], $config['response_class'] ]);
         $optionDef->setPublic(true);
         foreach ($config['aliases'] as $alias) {
-            $optionDef->addMethodCall('registerAlias', [ $alias['alias'], $alias['class'], $alias['method'] ]);
+            $optionDef->addMethodCall('registerMethod', [ $alias['alias'], $alias['class'], $alias['method'] ]);
         }
         $container->setDefinition('Druidvav\ApiServiceBundle\ApiServiceContainer', $optionDef);
 
