@@ -83,11 +83,7 @@ class ApiServiceContainer extends ContainerService
             if ($requestParamId > 0 && isset($requestParams[$requestParamId])) {
                 throw new JsonRpcInvalidMethodException('Too many parameters');
             }
-            try {
-                $response->setResult(call_user_func_array([ $this->get($methodDef['service']), $methodDef['method'] ], $callingParams));
-            } catch (TypeError $e) {
-                throw new JsonRpcInvalidMethodException('Invalid parameter type!');
-            }
+            $response->setResult(call_user_func_array([ $this->get($methodDef['service']), $methodDef['method'] ], $callingParams));
         } catch (JsonRpcExceptionInterface $e) {
             $response->setError($e->getMessage(), $e->getCode());
         } catch (Exception $e) {
