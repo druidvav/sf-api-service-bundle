@@ -12,7 +12,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use TypeError;
 
 class ApiServiceContainer extends ContainerService
 {
@@ -74,6 +73,9 @@ class ApiServiceContainer extends ContainerService
                     } elseif (array_key_exists($key, $requestParams)) {
                         if (!empty($param['type']) && is_array($requestParams[$key]) && $param['type'] != 'array') {
                             throw new JsonRpcInvalidMethodException('Invalid parameter type for "' . $param['name'] . '", should be "' . $param['type'] . '"');
+                        }
+                        if (!$param['nullable'] && $requestParams[$key] === null) {
+                            throw new JsonRpcInvalidMethodException('Parameter "' . $param['name'] . '" cannot be null');
                         }
                         $callingParams[$i] = $requestParams[$key];
                         $requestParamId++;

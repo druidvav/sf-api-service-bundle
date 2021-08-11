@@ -24,7 +24,7 @@ class ApiServiceCompilerPass implements CompilerPassInterface
             $reader = new ReflectionClass($id);
             $methods = $reader->getMethods();
             foreach ($methods as $method) {
-                if (!$method->isPublic()) {
+                if (!$method->isPublic() || $method->isConstructor() || $method->getDeclaringClass()->getName() !== $reader->getName()) {
                     continue;
                 }
                 $className = $reader->getName();
@@ -45,6 +45,7 @@ class ApiServiceCompilerPass implements CompilerPassInterface
                         $methodParams[$i] = [
                             'type' => $param->getType() ? $param->getType()->getName() : null,
                             'name' => $param->getName(),
+                            'nullable' => $param->allowsNull(),
                             'optional' => $param->isOptional()
                         ];
                     }
@@ -54,7 +55,7 @@ class ApiServiceCompilerPass implements CompilerPassInterface
         }
     }
 
-    protected function fromCamelCase($input)
+    protected function fromCamelCase($input): string
     {
         preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
         $ret = $matches[0];
