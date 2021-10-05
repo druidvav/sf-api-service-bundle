@@ -1,7 +1,6 @@
 <?php
 namespace Druidvav\ApiServiceBundle;
 
-use Druidvav\ApiServiceBundle\Exception\JsonRpcInvalidMethodException;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

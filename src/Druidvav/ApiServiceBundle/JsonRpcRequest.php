@@ -46,13 +46,10 @@ class JsonRpcRequest
         $this->id = $body['id'];
         $this->method = $body['method'];
         $this->params = $body['params'];
-        $this->isAssociative = array_keys($this->params) ? array_keys($this->params)[0] !== 0 : false;
+        $this->isAssociative = array_keys($this->params) && array_keys($this->params)[0] !== 0;
     }
 
-    /**
-     * @return Request
-     */
-    public function getHttpRequest()
+    public function getHttpRequest(): Request
     {
         return $this->httpRequest;
     }
@@ -69,7 +66,7 @@ class JsonRpcRequest
 
     public function getParams()
     {
-        return $this->params ? $this->params : [ ];
+        return $this->params ?: [ ];
     }
 
     public function isAssociative()
@@ -79,7 +76,7 @@ class JsonRpcRequest
 
     public function getParam($param, $def = null)
     {
-        return isset($this->params[$param]) ? $this->params[$param] : $def;
+        return $this->params[$param] ?? $def;
     }
 
     public function addObject($object)
@@ -89,6 +86,6 @@ class JsonRpcRequest
 
     public function getObject($class)
     {
-        return isset($this->objects[$class]) ? $this->objects[$class] : null;
+        return $this->objects[$class] ?? null;
     }
 }

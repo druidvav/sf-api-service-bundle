@@ -1,8 +1,8 @@
 <?php
 namespace Druidvav\ApiServiceBundle;
 
+use Druidvav\EssentialsBundle\Controller;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
 class ApiController extends Controller

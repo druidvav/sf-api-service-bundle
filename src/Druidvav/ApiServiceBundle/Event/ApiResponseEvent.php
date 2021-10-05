@@ -2,7 +2,7 @@
 namespace Druidvav\ApiServiceBundle\Event;
 
 use Druidvav\ApiServiceBundle\JsonRpcResponse;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class ApiResponseEvent extends Event
 {
@@ -15,7 +15,7 @@ class ApiResponseEvent extends Event
         $this->response = $response;
     }
 
-    public function getResponse()
+    public function getResponse(): JsonRpcResponse
     {
         return $this->response;
     }

@@ -1,6 +1,7 @@
 <?php
 namespace Druidvav\ApiServiceBundle\DependencyInjection;
 
+use Exception;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
@@ -12,7 +13,7 @@ class DvApiServiceExtension extends Extension
      * @param  array $configs
      * @param  ContainerBuilder $container
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function load(array $configs, ContainerBuilder $container)
     {
@@ -24,7 +25,7 @@ class DvApiServiceExtension extends Extension
      *
      * @param array $configs
      * @param ContainerBuilder $container
-     * @throws \Exception
+     * @throws Exception
      */
     protected function loadConfiguration(array $configs, ContainerBuilder $container)
     {

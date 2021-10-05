@@ -8,7 +8,7 @@ class JsonRpcResponse
 {
     protected $stopwatch;
     protected $request;
-    protected $error = null;
+    protected ?array $error = null;
     protected $result = false;
     protected $httpResponse;
 
@@ -19,18 +19,12 @@ class JsonRpcResponse
         $this->stopwatch->start('api');
     }
 
-    /**
-     * @return JsonRpcRequest
-     */
-    public function getRequest()
+    public function getRequest(): JsonRpcRequest
     {
         return $this->request;
     }
 
-    /**
-     * @return Stopwatch
-     */
-    public function getStopwatch()
+    public function getStopwatch(): Stopwatch
     {
         return $this->stopwatch;
     }
@@ -53,7 +47,7 @@ class JsonRpcResponse
         $this->result = $result;
     }
 
-    public function getError()
+    public function getError(): ?array
     {
         return !empty($this->error) ? $this->error : null;
     }
@@ -63,7 +57,7 @@ class JsonRpcResponse
         return !empty($this->error) ? null : $this->result;
     }
 
-    protected function getResponseArray()
+    protected function getResponseArray(): array
     {
         $result = [
             'jsonrpc' => '2.0',
@@ -86,10 +80,7 @@ class JsonRpcResponse
         $this->httpResponse = $response;
     }
 
-    /**
-     * @return JsonResponse
-     */
-    public function getHttpResponse()
+    public function getHttpResponse(): JsonResponse
     {
         if (empty($this->httpResponse)) {
             $this->generateHttpResponse();
