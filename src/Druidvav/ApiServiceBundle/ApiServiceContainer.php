@@ -95,7 +95,7 @@ class ApiServiceContainer extends ContainerService
             $logger->error($e->getMessage(), [ 'exception' => $e ]);
             $response->setError($e->getMessage(), -32603);
         }
-        $this->dispatcher->dispatch(ApiResponseEvent::NAME, new ApiResponseEvent($request));
+        $this->dispatcher->dispatch(ApiResponseEvent::NAME, new ApiResponseEvent($response));
 //        $this->dispatcher->dispatch(new ApiResponseEvent($response), ApiResponseEvent::NAME);
         return $response->getHttpResponse();
     }
