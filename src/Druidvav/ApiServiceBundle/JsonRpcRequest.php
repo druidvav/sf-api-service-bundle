@@ -64,7 +64,7 @@ class JsonRpcRequest
         return $this->method;
     }
 
-    public function getParams()
+    public function getParams(): array
     {
         return $this->params ?: [ ];
     }

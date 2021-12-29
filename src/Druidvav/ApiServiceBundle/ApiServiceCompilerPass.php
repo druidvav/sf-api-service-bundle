@@ -5,6 +5,7 @@ use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class ApiServiceCompilerPass implements CompilerPassInterface
 {
@@ -37,6 +38,8 @@ class ApiServiceCompilerPass implements CompilerPassInterface
                             $methodParams[$i] = [ 'className' => JsonRpcRequest::class ];
                         } elseif ($param->getClass()->getName() == JsonRpcResponse::class || $param->getClass()->isSubclassOf(JsonRpcResponse::class)) {
                             $methodParams[$i] = [ 'className' => JsonRpcResponse::class ];
+                        } elseif ($param->getClass()->getName() == Request::class) {
+                            $methodParams[$i] = [ 'className' => Request::class ];
                         } else {
                             $methodParams[$i] = [ 'className' => $param->getClass()->getName() ];
                         }

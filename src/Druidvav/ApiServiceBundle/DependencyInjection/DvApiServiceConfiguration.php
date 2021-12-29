@@ -6,15 +6,12 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class DvApiServiceConfiguration implements ConfigurationInterface
 {
-    /**
-     * Generates the configuration tree builder.
-     *
-     * @return TreeBuilder The tree builder
-     */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder("dv_api_service");
-        $rootNode = $treeBuilder->getRootNode();
+//        $treeBuilder = new TreeBuilder("dv_api_service");
+//        $rootNode = $treeBuilder->getRootNode();
+        $treeBuilder = new TreeBuilder();
+        $rootNode = $treeBuilder->root("dv_api_service");
 
         $rootNode->
             children()->

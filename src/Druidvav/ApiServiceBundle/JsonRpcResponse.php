@@ -9,6 +9,7 @@ class JsonRpcResponse
     protected $stopwatch;
     protected $request;
     protected ?array $error = null;
+    /** @var mixed */
     protected $result = false;
     protected $httpResponse;
 

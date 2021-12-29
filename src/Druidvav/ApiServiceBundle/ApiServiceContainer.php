@@ -47,7 +47,8 @@ class ApiServiceContainer extends ContainerService
         $response = new $this->responseClass($request);
         try {
             $request->parseRequest($httpRequest);
-            $this->dispatcher->dispatch(new ApiRequestEvent($request), ApiRequestEvent::NAME);
+            $this->dispatcher->dispatch(ApiRequestEvent::NAME, new ApiRequestEvent($request));
+//            $this->dispatcher->dispatch(new ApiRequestEvent($request), ApiRequestEvent::NAME);
             if (!$request->getMethod() || empty($this->methods[$request->getMethod()])) {
                 throw new JsonRpcInvalidMethodException('Method not found');
             }
@@ -59,6 +60,8 @@ class ApiServiceContainer extends ContainerService
                 if (!empty($param['className'])) {
                     if ($param['className'] == JsonRpcRequest::class) {
                         $callingParams[$i] = $request;
+                    } elseif ($param['className'] == Request::class) {
+                        $callingParams[$i] = $request->getHttpRequest();
                     } elseif ($param['className'] == JsonRpcResponse::class) {
                         $callingParams[$i] = $response;
                     } elseif ($request->getObject($param['className'])) {
@@ -92,7 +95,8 @@ class ApiServiceContainer extends ContainerService
             $logger->error($e->getMessage(), [ 'exception' => $e ]);
             $response->setError($e->getMessage(), -32603);
         }
-        $this->dispatcher->dispatch(new ApiResponseEvent($response), ApiResponseEvent::NAME);
+        $this->dispatcher->dispatch(ApiResponseEvent::NAME, new ApiResponseEvent($request));
+//        $this->dispatcher->dispatch(new ApiResponseEvent($response), ApiResponseEvent::NAME);
         return $response->getHttpResponse();
     }
 }

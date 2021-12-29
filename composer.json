@@ -9,10 +9,10 @@
   "require": {
     "php": ">=7.4.0",
     "ext-json": "*",
-    "symfony/framework-bundle": "^5.3",
-    "symfony/event-dispatcher": "^5.3",
-    "symfony/stopwatch": "^5.3",
-    "druidvav/essentials-bundle": "dev-master"
+    "symfony/framework-bundle": "^3.4",
+    "symfony/event-dispatcher": "^3.4",
+    "symfony/stopwatch": "^3.4",
+    "druidvav/essentials-bundle": "^2.3"
   },
   "require-dev": {
 
