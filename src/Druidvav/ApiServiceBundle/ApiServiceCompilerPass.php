@@ -3,8 +3,11 @@ namespace Druidvav\ApiServiceBundle;
 
 use ReflectionClass;
 use ReflectionException;
+use ReflectionNamedType;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpFoundation\Request;
 
 class ApiServiceCompilerPass implements CompilerPassInterface
@@ -20,6 +23,15 @@ class ApiServiceCompilerPass implements CompilerPassInterface
         }
         $definition = $container->findDefinition(ApiServiceContainer::class);
         $taggedServices = $container->findTaggedServiceIds('jsonrpc.api-service');
+
+        // Restrict ApiServiceContainer to only tagged API services (can be private).
+        $serviceMap = [ ];
+        foreach ($taggedServices as $id => $tags) {
+            $serviceMap[$id] = new Reference($id);
+        }
+        $locator = ServiceLocatorTagPass::register($container, $serviceMap);
+        $definition->setArgument(0, $locator);
+
         foreach ($taggedServices as $id => $tags) {
             $reader = new ReflectionClass($id);
             $methods = $reader->getMethods();
@@ -45,7 +57,7 @@ class ApiServiceCompilerPass implements CompilerPassInterface
                         }
                     } else {
                         $methodParams[$i] = [
-                            'type' => $param->getType() ? $param->getType()->getName() : null,
+                            'type' => ($param->getType() instanceof ReflectionNamedType) ? $param->getType()->getName() : null,
                             'name' => $param->getName(),
                             'nullable' => $param->allowsNull(),
                             'optional' => $param->isOptional()

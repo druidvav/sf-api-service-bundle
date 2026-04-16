@@ -3,8 +3,7 @@ namespace Druidvav\ApiServiceBundle\Event;
 
 use Druidvav\ApiServiceBundle\JsonRpcRequest;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\EventDispatcher\Event;
-//use Symfony\Contracts\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class ApiRequestEvent extends Event
 {

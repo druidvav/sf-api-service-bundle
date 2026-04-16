@@ -8,10 +8,8 @@ class DvApiServiceConfiguration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-//        $treeBuilder = new TreeBuilder("dv_api_service");
-//        $rootNode = $treeBuilder->getRootNode();
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root("dv_api_service");
+        $treeBuilder = new TreeBuilder('dv_api_service');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode->
             children()->

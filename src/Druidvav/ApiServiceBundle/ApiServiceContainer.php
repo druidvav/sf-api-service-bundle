@@ -4,28 +4,28 @@ namespace Druidvav\ApiServiceBundle;
 use Druidvav\ApiServiceBundle\Event\ApiRequestEvent;
 use Druidvav\ApiServiceBundle\Event\ApiResponseEvent;
 use Druidvav\ApiServiceBundle\Exception\JsonRpcExceptionInterface;
-use Druidvav\EssentialsBundle\Service\ContainerService;
 use Druidvav\ApiServiceBundle\Exception\JsonRpcInvalidMethodException;
 use Exception;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-class ApiServiceContainer extends ContainerService
+class ApiServiceContainer
 {
     protected $logger;
     protected $methods = [ ];
     protected $dispatcher;
     protected $requestClass;
     protected $responseClass;
+    private $container;
 
     public function __construct(ContainerInterface $container, LoggerInterface $logger, EventDispatcherInterface $dispatcher)
     {
+        $this->container = $container;
         $this->logger = $logger;
         $this->dispatcher = $dispatcher;
-        parent::__construct($container);
     }
 
     public function registerMethod($apiMethodName, $className, $methodName, $methodParams)
@@ -47,8 +47,7 @@ class ApiServiceContainer extends ContainerService
         $response = new $this->responseClass($request);
         try {
             $request->parseRequest($httpRequest);
-            $this->dispatcher->dispatch(ApiRequestEvent::NAME, new ApiRequestEvent($request));
-//            $this->dispatcher->dispatch(new ApiRequestEvent($request), ApiRequestEvent::NAME);
+            $this->dispatcher->dispatch(new ApiRequestEvent($request), ApiRequestEvent::NAME);
             if (!$request->getMethod() || empty($this->methods[$request->getMethod()])) {
                 throw new JsonRpcInvalidMethodException('Method not found');
             }
@@ -88,15 +87,14 @@ class ApiServiceContainer extends ContainerService
             if ($requestParamId > 0 && isset($requestParams[$requestParamId])) {
                 throw new JsonRpcInvalidMethodException('Too many parameters');
             }
-            $response->setResult(call_user_func_array([ $this->get($methodDef['service']), $methodDef['method'] ], $callingParams));
+            $response->setResult(call_user_func_array([ $this->container->get($methodDef['service']), $methodDef['method'] ], $callingParams));
         } catch (JsonRpcExceptionInterface $e) {
             $response->setError($e->getMessage(), $e->getCode());
         } catch (Exception $e) {
             $logger->error($e->getMessage(), [ 'exception' => $e ]);
             $response->setError($e->getMessage(), -32603);
         }
-        $this->dispatcher->dispatch(ApiResponseEvent::NAME, new ApiResponseEvent($response));
-//        $this->dispatcher->dispatch(new ApiResponseEvent($response), ApiResponseEvent::NAME);
+        $this->dispatcher->dispatch(new ApiResponseEvent($response), ApiResponseEvent::NAME);
         return $response->getHttpResponse();
     }
 }

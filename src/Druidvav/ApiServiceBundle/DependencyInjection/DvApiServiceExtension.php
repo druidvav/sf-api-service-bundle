@@ -2,6 +2,8 @@
 namespace Druidvav\ApiServiceBundle\DependencyInjection;
 
 use Exception;
+use Druidvav\ApiServiceBundle\ApiController;
+use Druidvav\ApiServiceBundle\ApiServiceContainer;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
@@ -31,7 +33,7 @@ class DvApiServiceExtension extends Extension
     {
         $config = $this->processConfiguration(new DvApiServiceConfiguration(), $configs);
 
-        $optionDef = new Definition('Druidvav\ApiServiceBundle\ApiServiceContainer');
+        $optionDef = new Definition(ApiServiceContainer::class);
         $optionDef->addArgument(new Reference('service_container'));
         $optionDef->addArgument(new Reference(str_replace('@', '', $config['logger'])));
         $optionDef->addArgument(new Reference('event_dispatcher'));
@@ -40,12 +42,12 @@ class DvApiServiceExtension extends Extension
         foreach ($config['aliases'] as $alias) {
             $optionDef->addMethodCall('registerMethod', [ $alias['alias'], $alias['class'], $alias['method'] ]);
         }
-        $container->setDefinition('Druidvav\ApiServiceBundle\ApiServiceContainer', $optionDef);
+        $container->setDefinition(ApiServiceContainer::class, $optionDef);
 
-        $optionDef = new Definition('Druidvav\ApiServiceBundle\ApiController');
+        $optionDef = new Definition(ApiController::class);
         $optionDef->setPublic(true);
         $optionDef->setAutoconfigured(true);
         $optionDef->setAutowired(true);
-        $container->setDefinition('Druidvav\ApiServiceBundle\ApiController', $optionDef);
+        $container->setDefinition(ApiController::class, $optionDef);
     }
 }
