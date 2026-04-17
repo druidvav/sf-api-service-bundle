@@ -9,10 +9,13 @@
   "require": {
     "php": ">=7.4.0",
     "ext-json": "*",
-    "symfony/framework-bundle": "^4.3",
-    "symfony/event-dispatcher": "^4.3",
-    "symfony/stopwatch": "^4.3",
-    "symfony/contracts": "^1.0"
+    "symfony/framework-bundle": "^4.4 || ^5.4",
+    "symfony/event-dispatcher": "^4.4 || ^5.4",
+    "symfony/stopwatch": "^4.4 || ^5.4",
+    "symfony/contracts": "^1.0 || ^2.5"
+  },
+  "conflict": {
+    "symfony/framework-bundle": ">=6.0"
   },
   "require-dev": {
 
