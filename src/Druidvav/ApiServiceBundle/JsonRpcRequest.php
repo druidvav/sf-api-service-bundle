@@ -1,4 +1,5 @@
 <?php
+
 namespace Druidvav\ApiServiceBundle;
 
 use Druidvav\ApiServiceBundle\Exception\JsonRpcInvalidRequestException;
@@ -7,27 +8,26 @@ use Symfony\Component\HttpFoundation\Request;
 
 class JsonRpcRequest
 {
-    private $httpRequest;
+    private ?Request $httpRequest = null;
     private $id;
     private $method;
     private $params;
-    private $isAssociative;
+    private ?bool $isAssociative = null;
 
-    private $objects = [ ];
+    private array $objects = [];
 
     /**
-     * @param Request $request
      * @throws JsonRpcInvalidRequestException
      * @throws JsonRpcParseException
      */
-    public function parseRequest(Request $request)
+    public function parseRequest(Request $request): void
     {
         $this->httpRequest = $request;
         if (!$this->httpRequest->isMethod('POST')) {
             throw new JsonRpcParseException('Invalid method, method should be POST');
         }
-        if ($this->httpRequest->getContentType() != 'json' &&
-            $this->httpRequest->getContentType() != 'json-rpc') {
+        if ('json' != $this->httpRequest->getContentType()
+            && 'json-rpc' != $this->httpRequest->getContentType()) {
             throw new JsonRpcParseException('Content-Type should by application/json');
         }
         $body = json_decode($this->httpRequest->getContent(), true);
@@ -46,7 +46,7 @@ class JsonRpcRequest
         $this->id = $body['id'];
         $this->method = $body['method'];
         $this->params = $body['params'];
-        $this->isAssociative = array_keys($this->params) && array_keys($this->params)[0] !== 0;
+        $this->isAssociative = array_keys($this->params) && 0 !== array_keys($this->params)[0];
     }
 
     public function getHttpRequest(): Request
@@ -66,7 +66,7 @@ class JsonRpcRequest
 
     public function getParams(): array
     {
-        return $this->params ?: [ ];
+        return $this->params ?: [];
     }
 
     public function isAssociative()
@@ -79,9 +79,9 @@ class JsonRpcRequest
         return $this->params[$param] ?? $def;
     }
 
-    public function addObject($object)
+    public function addObject($object): void
     {
-        $this->objects[get_class($object)] = $object;
+        $this->objects[$object::class] = $object;
     }
 
     public function getObject($class)

@@ -1,4 +1,8 @@
 .idea
-vendor
 composer.lock
-test.php
+vendor
+.php-cs-fixer.cache
+/tools/vendor/
+/tools/var/
+/tools/.php-cs-fixer.cache
+/tools/composer.lock

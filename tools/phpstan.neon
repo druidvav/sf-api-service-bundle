@@ -1,0 +1,20 @@
+parameters:
+  level: 2
+  paths:
+    - ../src
+  tmpDir: %currentWorkingDirectory%/var/phpstan
+  reportUnmatchedIgnoredErrors: true
+  bootstrapFiles:
+    - ../vendor/autoload.php
+
+  checkMissingTypehints: false
+  checkMissingIterableValueType: false
+  checkMissingCallableSignature: false
+  treatPhpDocTypesAsCertain: false
+
+  excludePaths:
+    analyse:
+      - ../src/**/Resources/**
+
+includes:
+  - vendor/phpstan/phpstan-symfony/extension.neon

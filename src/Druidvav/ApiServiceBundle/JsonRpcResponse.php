@@ -1,4 +1,5 @@
 <?php
+
 namespace Druidvav\ApiServiceBundle;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -6,10 +7,9 @@ use Symfony\Component\Stopwatch\Stopwatch;
 
 class JsonRpcResponse
 {
-    protected $stopwatch;
-    protected $request;
+    protected Stopwatch $stopwatch;
+    protected JsonRpcRequest $request;
     protected ?array $error = null;
-    /** @var mixed */
     protected $result = false;
     protected $httpResponse;
 
@@ -35,49 +35,50 @@ class JsonRpcResponse
         return $this->getStopwatch()->getEvent('api')->getDuration();
     }
 
-    public function setError($message, $code = 0)
+    public function setError($message, $code = 0): void
     {
         $this->error = [
             'code' => $code,
-            'message' => $message
+            'message' => $message,
         ];
     }
 
-    public function setResult($result)
+    public function setResult($result): void
     {
         $this->result = $result;
     }
 
     public function getError(): ?array
     {
-        return !empty($this->error) ? $this->error : null;
+        return null === $this->error || [] === $this->error ? null : $this->error;
     }
 
     public function getResult()
     {
-        return !empty($this->error) ? null : $this->result;
+        return null === $this->error || [] === $this->error ? $this->result : null;
     }
 
     protected function getResponseArray(): array
     {
         $result = [
             'jsonrpc' => '2.0',
-            'id' => $this->getRequest() ? $this->getRequest()->getId() : null
+            'id' => $this->getRequest() ? $this->getRequest()->getId() : null,
         ];
-        if (!empty($this->error)) {
+        if (null !== $this->error && [] !== $this->error) {
             $result['error'] = $this->error;
         } else {
             $result['result'] = $this->result;
         }
+
         return $result;
     }
 
-    public function generateHttpResponse()
+    public function generateHttpResponse(): void
     {
         $this->stopwatch->stop('api');
         $response = new JsonResponse($this->getResponseArray());
         $response->setEncodingOptions($response->getEncodingOptions() | JSON_UNESCAPED_UNICODE);
-        $response->headers->add([ 'X-Api-Time' => $this->getDuration() ]);
+        $response->headers->add(['X-Api-Time' => $this->getDuration()]);
         $this->httpResponse = $response;
     }
 
@@ -86,6 +87,7 @@ class JsonRpcResponse
         if (empty($this->httpResponse)) {
             $this->generateHttpResponse();
         }
+
         return $this->httpResponse;
     }
 }

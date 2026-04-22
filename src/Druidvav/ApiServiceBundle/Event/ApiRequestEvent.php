@@ -1,4 +1,5 @@
 <?php
+
 namespace Druidvav\ApiServiceBundle\Event;
 
 use Druidvav\ApiServiceBundle\JsonRpcRequest;
@@ -7,9 +8,9 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 class ApiRequestEvent extends Event
 {
-    const NAME = 'dv_api.request';
+    public const NAME = 'dv_api.request';
 
-    protected $request;
+    protected JsonRpcRequest $request;
 
     public function __construct(JsonRpcRequest $request)
     {

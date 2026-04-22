@@ -1,5 +1,5 @@
 {
-  "name": "druidvav/api-service-bundle",
+  "name": "druidvav/essentials-bundle",
   "type": "symfony-bundle",
   "license": "MIT",
   "description": "",
@@ -19,5 +19,13 @@
   },
   "require-dev": {
 
+  },
+  "scripts": {
+    "tools:install": "composer --working-dir=tools install",
+    "stan": "composer --working-dir=tools phpstan",
+    "rector": "composer --working-dir=tools rector:dry-run",
+    "rector:fix": "composer --working-dir=tools rector",
+    "cs": "composer --working-dir=tools cs",
+    "cs:fix": "composer --working-dir=tools cs:fix"
   }
 }

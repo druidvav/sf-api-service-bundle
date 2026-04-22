@@ -1,23 +1,21 @@
 <?php
+
 namespace Druidvav\ApiServiceBundle\DependencyInjection;
 
-use Exception;
 use Druidvav\ApiServiceBundle\ApiController;
 use Druidvav\ApiServiceBundle\ApiServiceContainer;
+use Exception;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class DvApiServiceExtension extends Extension
 {
     /**
-     * @param  array $configs
-     * @param  ContainerBuilder $container
-     * @return void
      * @throws Exception
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $this->loadConfiguration($configs, $container);
     }
@@ -25,8 +23,6 @@ class DvApiServiceExtension extends Extension
     /**
      * Loads the configuration in, with any defaults
      *
-     * @param array $configs
-     * @param ContainerBuilder $container
      * @throws Exception
      */
     protected function loadConfiguration(array $configs, ContainerBuilder $container)
@@ -37,10 +33,10 @@ class DvApiServiceExtension extends Extension
         $optionDef->addArgument(new Reference('service_container'));
         $optionDef->addArgument(new Reference(str_replace('@', '', $config['logger'])));
         $optionDef->addArgument(new Reference('event_dispatcher'));
-        $optionDef->addMethodCall('setClassNames', [ $config['request_class'], $config['response_class'] ]);
+        $optionDef->addMethodCall('setClassNames', [$config['request_class'], $config['response_class']]);
         $optionDef->setPublic(true);
         foreach ($config['aliases'] as $alias) {
-            $optionDef->addMethodCall('registerMethod', [ $alias['alias'], $alias['class'], $alias['method'] ]);
+            $optionDef->addMethodCall('registerMethod', [$alias['alias'], $alias['class'], $alias['method']]);
         }
         $container->setDefinition(ApiServiceContainer::class, $optionDef);
 

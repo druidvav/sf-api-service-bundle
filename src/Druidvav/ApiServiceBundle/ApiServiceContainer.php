@@ -1,4 +1,5 @@
 <?php
+
 namespace Druidvav\ApiServiceBundle;
 
 use Druidvav\ApiServiceBundle\Event\ApiRequestEvent;
@@ -14,12 +15,12 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class ApiServiceContainer
 {
-    protected $logger;
-    protected $methods = [ ];
-    protected $dispatcher;
+    protected LoggerInterface $logger;
+    protected $methods = [];
+    protected EventDispatcherInterface $dispatcher;
     protected $requestClass;
     protected $responseClass;
-    private $container;
+    private ContainerInterface $container;
 
     public function __construct(ContainerInterface $container, LoggerInterface $logger, EventDispatcherInterface $dispatcher)
     {
@@ -28,12 +29,12 @@ class ApiServiceContainer
         $this->dispatcher = $dispatcher;
     }
 
-    public function registerMethod($apiMethodName, $className, $methodName, $methodParams)
+    public function registerMethod($apiMethodName, $className, $methodName, $methodParams): void
     {
-        $this->methods[$apiMethodName] = [ 'service' => $className, 'method' => $methodName, 'params' => $methodParams ];
+        $this->methods[$apiMethodName] = ['service' => $className, 'method' => $methodName, 'params' => $methodParams];
     }
 
-    public function setClassNames($requestClass, $responseClass)
+    public function setClassNames($requestClass, $responseClass): void
     {
         $this->requestClass = $requestClass;
         $this->responseClass = $responseClass;
@@ -54,14 +55,14 @@ class ApiServiceContainer
             $methodDef = $this->methods[$request->getMethod()];
             $requestParams = $request->getParams();
             $requestParamId = 0;
-            $callingParams = [ ];
+            $callingParams = [];
             foreach ($methodDef['params'] as $i => $param) {
                 if (!empty($param['className'])) {
-                    if ($param['className'] == JsonRpcRequest::class) {
+                    if (JsonRpcRequest::class == $param['className']) {
                         $callingParams[$i] = $request;
-                    } elseif ($param['className'] == Request::class) {
+                    } elseif (Request::class == $param['className']) {
                         $callingParams[$i] = $request->getHttpRequest();
-                    } elseif ($param['className'] == JsonRpcResponse::class) {
+                    } elseif (JsonRpcResponse::class == $param['className']) {
                         $callingParams[$i] = $response;
                     } elseif ($request->getObject($param['className'])) {
                         $callingParams[$i] = $request->getObject($param['className']);
@@ -71,30 +72,32 @@ class ApiServiceContainer
                 } else {
                     $key = $request->isAssociative() ? $param['name'] : $requestParamId;
                     if (!array_key_exists($key, $requestParams) && !$param['optional']) {
-                        throw new JsonRpcInvalidMethodException('Undefined parameter "' . $param['name'] . '"');
-                    } elseif (array_key_exists($key, $requestParams)) {
-                        if (!empty($param['type']) && is_array($requestParams[$key]) && $param['type'] != 'array') {
-                            throw new JsonRpcInvalidMethodException('Invalid parameter type for "' . $param['name'] . '", should be "' . $param['type'] . '"');
+                        throw new JsonRpcInvalidMethodException('Undefined parameter "'.$param['name'].'"');
+                    }
+                    if (array_key_exists($key, $requestParams)) {
+                        if (!empty($param['type']) && is_array($requestParams[$key]) && 'array' != $param['type']) {
+                            throw new JsonRpcInvalidMethodException('Invalid parameter type for "'.$param['name'].'", should be "'.$param['type'].'"');
                         }
-                        if (!$param['nullable'] && $requestParams[$key] === null) {
-                            throw new JsonRpcInvalidMethodException('Parameter "' . $param['name'] . '" cannot be null');
+                        if (!$param['nullable'] && null === $requestParams[$key]) {
+                            throw new JsonRpcInvalidMethodException('Parameter "'.$param['name'].'" cannot be null');
                         }
                         $callingParams[$i] = $requestParams[$key];
-                        $requestParamId++;
+                        ++$requestParamId;
                     }
                 }
             }
             if ($requestParamId > 0 && isset($requestParams[$requestParamId])) {
                 throw new JsonRpcInvalidMethodException('Too many parameters');
             }
-            $response->setResult(call_user_func_array([ $this->container->get($methodDef['service']), $methodDef['method'] ], $callingParams));
+            $response->setResult(call_user_func_array([$this->container->get($methodDef['service']), $methodDef['method']], $callingParams));
         } catch (JsonRpcExceptionInterface $e) {
             $response->setError($e->getMessage(), $e->getCode());
         } catch (Exception $e) {
-            $logger->error($e->getMessage(), [ 'exception' => $e ]);
+            $logger->error($e->getMessage(), ['exception' => $e]);
             $response->setError($e->getMessage(), -32603);
         }
         $this->dispatcher->dispatch(new ApiResponseEvent($response), ApiResponseEvent::NAME);
+
         return $response->getHttpResponse();
     }
 }

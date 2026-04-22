@@ -1,4 +1,5 @@
 <?php
+
 namespace Druidvav\ApiServiceBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -13,9 +14,9 @@ class DvApiServiceConfiguration implements ConfigurationInterface
 
         $rootNode->
             children()->
-                scalarNode("logger")->defaultValue('@logger')->end()->
-                scalarNode("request_class")->defaultValue('Druidvav\ApiServiceBundle\JsonRpcRequest')->end()->
-                scalarNode("response_class")->defaultValue('Druidvav\ApiServiceBundle\JsonRpcResponse')->end()->
+                scalarNode('logger')->defaultValue('@logger')->end()->
+                scalarNode('request_class')->defaultValue('Druidvav\ApiServiceBundle\JsonRpcRequest')->end()->
+                scalarNode('response_class')->defaultValue('Druidvav\ApiServiceBundle\JsonRpcResponse')->end()->
                 arrayNode('aliases')->
                     arrayPrototype()->
                         children()->

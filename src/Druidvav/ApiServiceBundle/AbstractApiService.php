@@ -1,4 +1,5 @@
 <?php
+
 namespace Druidvav\ApiServiceBundle;
 
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
