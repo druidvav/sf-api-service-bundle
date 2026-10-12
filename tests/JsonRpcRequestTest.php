@@ -55,16 +55,13 @@ $request->parseRequest(httpRequest('{"jsonrpc":"2.0","id":0,"method":"item.get",
 check(0 === $request->getId(), 'Integer zero ID must be accepted');
 check('item.get' === $request->getMethod(), 'Method should be retained');
 check(true === $request->isAssociative(), 'Empty object params are named');
-check($request->getRawParams() instanceof stdClass, 'Raw empty object should remain an object');
 check([] === $request->getParams(), 'Compatibility params should be an array');
 
 $request->parseRequest(httpRequest('{"jsonrpc":"2.0","id":"0","method":"item.get","params":[{"nested":{}},[]]}'));
 check('0' === $request->getId(), 'String zero ID must be accepted');
 check(false === $request->isAssociative(), 'Array params are positional');
-check(is_array($request->getRawParams()), 'Raw positional params should remain an array');
-check($request->getRawParams()[0]->nested instanceof stdClass, 'Nested empty object must be preserved');
-check([] === $request->getRawParams()[1], 'Nested empty array must be preserved');
-check([] === $request->getParam(0)['nested'], 'Compatibility parameter access should return arrays');
+check([] === $request->getParam(0)['nested'], 'Nested empty objects decode as arrays');
+check([] === $request->getParam(1), 'Nested empty arrays decode as arrays');
 
 $request->parseRequest(httpRequest('{"jsonrpc":"2.0","id":7,"method":"item.get","params":{"0":"first","1":"second"}}'));
 check(true === $request->isAssociative(), 'Numeric object keys must still be named params');
@@ -87,7 +84,7 @@ foreach ([0, 1] as $id) {
     expectError($request, '{"jsonrpc":"2.0","id":'.$id.',"method":"audit.log","params":null}', -32602);
     check($id === $request->getId(), 'Valid ID must be retained for invalid-params response');
     check('audit.log' === $request->getMethod(), 'Valid method must be retained for audit context');
-    check([] === $request->getParams() && null === $request->getRawParams(), 'Invalid params must not remain available');
+    check([] === $request->getParams(), 'Invalid params must not remain available');
 
     $response = new JsonRpcResponse($request);
     $response->setError('Invalid params', -32602);
@@ -103,7 +100,7 @@ $request->parseRequest(httpRequest('{"jsonrpc":"2.0","id":9,"method":"before","p
 $request->addObject(new stdClass());
 expectError($request, '{', -32700);
 check(null === $request->getId() && null === $request->getMethod(), 'Failed parse must clear ID and method');
-check([] === $request->getParams() && null === $request->getRawParams(), 'Failed parse must clear params');
+check([] === $request->getParams(), 'Failed parse must clear params');
 check(null === $request->isAssociative(), 'Failed parse must clear parameter kind');
 check(null === $request->getObject(stdClass::class), 'Failed parse must clear attached objects');
 

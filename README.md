@@ -68,13 +68,5 @@ named parameters; an array supplies positional parameters. For example:
 ```
 
 `getParams()` continues to return a PHP array, and `getParam()` returns a value
-from that array, for compatibility with existing services. `getRawParams()` returns the decoded JSON structure as
-`stdClass|array`, preserving objects and arrays at every depth. Use it when an
-empty JSON object (`{}`) must be distinguished from an empty array (`[]`):
-
-```php
-$raw = $request->getRawParams();
-if ($raw instanceof \stdClass) {
-    // Named parameters, including an empty object.
-}
-```
+from that array, for compatibility with existing services. Nested JSON objects
+and arrays are both decoded as PHP arrays.

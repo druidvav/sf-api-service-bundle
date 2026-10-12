@@ -13,8 +13,6 @@ class JsonRpcRequest
     private $id;
     private $method;
     private $params;
-    /** @var \stdClass|array|null */
-    private $rawParams;
     private ?bool $isAssociative = null;
 
     private array $objects = [];
@@ -30,7 +28,6 @@ class JsonRpcRequest
         $this->id = null;
         $this->method = null;
         $this->params = [];
-        $this->rawParams = null;
         $this->isAssociative = null;
         $this->objects = [];
 
@@ -73,7 +70,6 @@ class JsonRpcRequest
             throw new JsonRpcInvalidParamException('Invalid request body, params should be a JSON object or array');
         }
 
-        $this->rawParams = $body->params;
         $this->params = json_decode($this->httpRequest->getContent(), true)['params'];
         $this->isAssociative = $body->params instanceof \stdClass;
     }
@@ -96,16 +92,6 @@ class JsonRpcRequest
     public function getParams(): array
     {
         return $this->params ?: [];
-    }
-
-    /**
-     * Returns the decoded JSON params with objects and arrays preserved at every level.
-     *
-     * @return \stdClass|array|null Null before a successful parse.
-     */
-    public function getRawParams()
-    {
-        return $this->rawParams;
     }
 
     public function isAssociative(): ?bool
