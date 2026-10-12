@@ -56,3 +56,25 @@ services:
         resource: '../../ApiService/*'
         tags: [ "jsonrpc.api-service" ]
 ```
+
+### JSON-RPC request params
+
+`JsonRpcRequest` accepts JSON-RPC 2.0 requests with an integer or string `id`, a
+nonblank `method`, and a required `params` object or array. An object supplies
+named parameters; an array supplies positional parameters. For example:
+
+```json
+{"jsonrpc":"2.0","id":0,"method":"item.get","params":{"code":"A1"}}
+```
+
+`getParams()` continues to return a PHP array, and `getParam()` returns a value
+from that array, for compatibility with existing services. `getRawParams()` returns the decoded JSON structure as
+`stdClass|array`, preserving objects and arrays at every depth. Use it when an
+empty JSON object (`{}`) must be distinguished from an empty array (`[]`):
+
+```php
+$raw = $request->getRawParams();
+if ($raw instanceof \stdClass) {
+    // Named parameters, including an empty object.
+}
+```

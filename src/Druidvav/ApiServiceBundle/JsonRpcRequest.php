@@ -3,6 +3,7 @@
 namespace Druidvav\ApiServiceBundle;
 
 use Druidvav\ApiServiceBundle\Exception\JsonRpcInvalidRequestException;
+use Druidvav\ApiServiceBundle\Exception\JsonRpcInvalidParamException;
 use Druidvav\ApiServiceBundle\Exception\JsonRpcParseException;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -12,17 +13,27 @@ class JsonRpcRequest
     private $id;
     private $method;
     private $params;
+    /** @var \stdClass|array|null */
+    private $rawParams;
     private ?bool $isAssociative = null;
 
     private array $objects = [];
 
     /**
      * @throws JsonRpcInvalidRequestException
+     * @throws JsonRpcInvalidParamException
      * @throws JsonRpcParseException
      */
     public function parseRequest(Request $request): void
     {
         $this->httpRequest = $request;
+        $this->id = null;
+        $this->method = null;
+        $this->params = [];
+        $this->rawParams = null;
+        $this->isAssociative = null;
+        $this->objects = [];
+
         if (!$this->httpRequest->isMethod('POST')) {
             throw new JsonRpcParseException('Invalid method, method should be POST');
         }
@@ -36,23 +47,35 @@ class JsonRpcRequest
         if ('json' != $contentFormat) {
             throw new JsonRpcParseException('Content-Type should be application/json');
         }
-        $body = json_decode($this->httpRequest->getContent(), true);
-        if (empty($body)) {
+        $body = json_decode($this->httpRequest->getContent());
+        if (JSON_ERROR_NONE !== json_last_error()) {
             throw new JsonRpcParseException('Invalid request body, should be valid json');
         }
-        if (empty($body['id'])) {
+        if (!($body instanceof \stdClass)) {
+            throw new JsonRpcInvalidRequestException('Invalid request body, should be a JSON object');
+        }
+        if (!property_exists($body, 'jsonrpc') || '2.0' !== $body->jsonrpc) {
+            throw new JsonRpcInvalidRequestException('Invalid request body, jsonrpc should be "2.0"');
+        }
+        if (!property_exists($body, 'id') || (!is_int($body->id) && !is_string($body->id))) {
             throw new JsonRpcInvalidRequestException('Invalid request body, should include id');
         }
-        if (empty($body['method'])) {
+        if (!property_exists($body, 'method') || !is_string($body->method) || '' === trim($body->method)) {
             throw new JsonRpcInvalidRequestException('Invalid request body, should include method');
         }
-        if (!isset($body['params'])) {
+        $this->id = $body->id;
+        $this->method = $body->method;
+
+        if (!property_exists($body, 'params')) {
             throw new JsonRpcInvalidRequestException('Invalid request body, should include params');
         }
-        $this->id = $body['id'];
-        $this->method = $body['method'];
-        $this->params = $body['params'];
-        $this->isAssociative = array_keys($this->params) && 0 !== array_keys($this->params)[0];
+        if (!($body->params instanceof \stdClass) && !is_array($body->params)) {
+            throw new JsonRpcInvalidParamException('Invalid request body, params should be a JSON object or array');
+        }
+
+        $this->rawParams = $body->params;
+        $this->params = json_decode($this->httpRequest->getContent(), true)['params'];
+        $this->isAssociative = $body->params instanceof \stdClass;
     }
 
     public function getHttpRequest(): Request
@@ -73,6 +96,16 @@ class JsonRpcRequest
     public function getParams(): array
     {
         return $this->params ?: [];
+    }
+
+    /**
+     * Returns the decoded JSON params with objects and arrays preserved at every level.
+     *
+     * @return \stdClass|array|null Null before a successful parse.
+     */
+    public function getRawParams()
+    {
+        return $this->rawParams;
     }
 
     public function isAssociative(): ?bool
